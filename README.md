@@ -17,7 +17,7 @@ Set the following environment variables
 ## Steps
 
 1. `npm run config`: Query the configuration for the target messaging service from Event Portal
-1. `npm run config`: Generate the terraform configuration files
+1. `npm run generate`: Generate the terraform configuration files
 1. All configuration files are stored in the `terraform-config` directory
 
 

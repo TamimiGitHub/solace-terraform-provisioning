@@ -1,0 +1,19 @@
+{
+  "name": "solace-terraform-config",
+  "version": "0.0.1",
+  "description": "This utility queryies the required configuration from event portal to pass to terraform",
+  "main": "getConfig.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "solace",
+    "terraform"
+  ],
+  "author": "Tamimi",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "fs": "0.0.1-security"
+  }
+}

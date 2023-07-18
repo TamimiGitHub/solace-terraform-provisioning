@@ -4,7 +4,8 @@
   "description": "This utility queryies the required configuration from event portal to pass to terraform",
   "main": "getConfig.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "config": "node src/getConfig.js",
+    "generate": "node src/generateTerraform.js"
   },
   "keywords": [
     "solace",

@@ -1,7 +1,7 @@
 {
   "name": "solace-terraform-config",
   "version": "0.0.1",
-  "description": "This utility queryies the required configuration from event portal to pass to terraform",
+  "description": "This utility queries the required configuration from event portal to pass to terraform",
   "main": "getConfig.js",
   "scripts": {
     "config": "node src/getConfig.js",

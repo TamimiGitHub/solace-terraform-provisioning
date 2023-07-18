@@ -5,7 +5,7 @@ This repo contains tools that will enable moving from Solace PubSub+ Event Porta
 ## Environment setup
 
 - Node 16+
-- `npm i` - install the required dependencies
+- `npm i`: install the required dependencies
 
 ## Environment Variables
 

@@ -122,7 +122,7 @@ function generate_hcl_json_msk(EP_CONFIG) {
       tf.push(format_tf_resource(operation, topic, alias, acl_principal))
     })
   })
-  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_acl_terraform_msk.json`, JSON.stringify(tf, null, 2), (err) => {
+  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_acl_terraform_msk.tf.json`, JSON.stringify(tf, null, 2), (err) => {
     if (err) throw err;
    })
 }

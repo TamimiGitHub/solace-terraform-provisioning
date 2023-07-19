@@ -11,11 +11,13 @@ try {
 
   // Generate topic terraform configuration file
   generate_topic_list_msk(EP_CONFIG)
-  generate_topic_list_kafka(EP_CONFIG)
+  generate_topic_list_confluent(EP_CONFIG)
  
-  // Generate Terraform Resource configuration file
-  generate_hcl_json_msk(EP_CONFIG)
-
+  // Generate Terraform Resource configuration files for the list of providers
+  let provider_type = ["msk", "confluent"]
+  provider_type.map(type => {
+    generate_hcl_json(EP_CONFIG, type)
+  })
 
 } catch (err) {
   console.error(err);
@@ -35,7 +37,7 @@ function generate_topic_list_msk(EP_CONFIG) {
    });
 }
 
-function generate_topic_list_kafka(EP_CONFIG) {
+function generate_topic_list_confluent(EP_CONFIG) {
   topic_list = {}
   EP_CONFIG.events.map(event =>{
     topic_list[event.topic] = {
@@ -43,7 +45,7 @@ function generate_topic_list_kafka(EP_CONFIG) {
       partitions_count: event.runtime_config.kafkaTopic.partitions[0].isrCount
     }
   })
-  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_topic_list_kafka.json`, JSON.stringify(topic_list, null, 2), (err) => {
+  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_topic_list_confluent.json`, JSON.stringify(topic_list, null, 2), (err) => {
     if (err) throw err;
    });
 }
@@ -99,7 +101,7 @@ function sortObject(obj) {
   }, {});
 }
 
-function generate_hcl_json_msk(EP_CONFIG) {
+function generate_hcl_json(EP_CONFIG, provider_type) {
   let tf = []
   var [operation, topic, app_name, alias, acl_principal] = "" 
   EP_CONFIG.applications.map(application => {
@@ -111,7 +113,7 @@ function generate_hcl_json_msk(EP_CONFIG) {
       operation = "Read",
       topic = EP_CONFIG.events.filter(event => event.event_version_id == consumedEventVersion)[0].topic
       alias = `${app_name}_${operation}_${topic}`
-      tf.push(format_tf_resource(operation, topic, alias, acl_principal))
+      tf.push(format_tf_resource(operation, topic, alias, acl_principal, provider_type))
     })
 
     // Create resource for all produced events
@@ -119,27 +121,56 @@ function generate_hcl_json_msk(EP_CONFIG) {
       operation = "Write",
       topic = EP_CONFIG.events.filter(event => event.event_version_id == producedEventVersion)[0].topic
       alias = `${app_name}_${operation}_${topic}`
-      tf.push(format_tf_resource(operation, topic, alias, acl_principal))
+      tf.push(format_tf_resource(operation, topic, alias, acl_principal, provider_type))
     })
   })
-  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_acl_terraform_msk.tf.json`, JSON.stringify(tf, null, 2), (err) => {
+  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_acl_terraform_${provider_type}.tf.json`, JSON.stringify(tf, null, 2), (err) => {
     if (err) throw err;
    })
 }
 
-function format_tf_resource(operation, topic, alias, acl_principal) {
-  return {
-    "resource": {
-      "kafka_acl": {
-        [alias] : {
-          "resource_name": topic,
-          "resource_type": "Topic",
-          "acl_principal": `User:${acl_principal}`,
-          "acl_host": "*",
-          "acl_operation": operation, 
-          "acl_permission_type": "Allow"
+function format_tf_resource(operation, topic, alias, acl_principal, provider_type) {
+  let config = {}
+  switch(provider_type) {
+    case 'msk':
+      config = {
+        "resource": {
+          "kafka_acl": {
+            [alias] : {
+              "resource_name": topic,
+              "resource_type": "Topic",
+              "acl_principal": `User:${acl_principal}`,
+              "acl_host": "*",
+              "acl_operation": operation, 
+              "acl_permission_type": "Allow"
+            }
+          }
         }
       }
-    }
+      break;
+    case 'confluent':
+      config = {
+        "resource": {
+          "confluent_kafka_acl": {
+            [alias] : {
+              "resource_type": "Topic",
+              "resource_name": topic,
+              "pattern_type" : "LITERAL",
+              "principal": `User:${acl_principal}`,
+              "host": "*",
+              "operation" : operation, 
+              "permission": "Allow",
+              "lifecycle" : {
+                "prevent_destroy" : true
+              }
+            },
+          }
+        }
+      }
+      break;
+    default:
+      throw new Error(`Provider type ${provider_type} not supported for ACL generation`)
   }
+
+  return config
 }

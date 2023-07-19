@@ -9,13 +9,10 @@ try {
   const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || "DEV-Kafka"
   const EP_CONFIG = JSON.parse(fs.readFileSync(`ep-config/${target_messaging_service}.json`, 'utf8'))
 
-  // Generate topic terraform configuration file
-  generate_topic_list_msk(EP_CONFIG)
-  generate_topic_list_confluent(EP_CONFIG)
- 
-  // Generate Terraform Resource configuration files for the list of providers
+  // Generate Topic and ACL Resource Terraform configuration files for the list of providers
   let provider_type = ["msk", "confluent"]
   provider_type.map(type => {
+    generate_topic_list(EP_CONFIG, type)
     generate_hcl_json(EP_CONFIG, type)
   })
 
@@ -23,29 +20,23 @@ try {
   console.error(err);
 }
 
-function generate_topic_list_msk(EP_CONFIG) {
+function generate_topic_list(EP_CONFIG, provider_type) {
   topic_list = {}
   EP_CONFIG.events.map(event =>{
-    topic_list[event.topic] = {
-      config: generate_topic_config(event.runtime_config),
-      replication_factor: event.runtime_config.kafkaTopic.partitions[0].isrCount,
-      partitions_count: event.runtime_config.kafkaTopic.partitions[0].isrCount
+    if (provider_type == 'msk') {
+      topic_list[event.topic] = {
+        config: generate_topic_config(event.runtime_config),
+        replication_factor: event.runtime_config.kafkaTopic.partitions[0].isrCount,
+        partitions_count: event.runtime_config.kafkaTopic.partitions[0].isrCount
+      }
+    } else {
+      topic_list[event.topic] = {
+        config: generate_topic_config(event.runtime_config),
+        partitions_count: event.runtime_config.kafkaTopic.partitions[0].isrCount
+      }
     }
   })
-  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_topic_list_msk.json`, JSON.stringify(topic_list, null, 2), (err) => {
-    if (err) throw err;
-   });
-}
-
-function generate_topic_list_confluent(EP_CONFIG) {
-  topic_list = {}
-  EP_CONFIG.events.map(event =>{
-    topic_list[event.topic] = {
-      config: generate_topic_config(event.runtime_config),
-      partitions_count: event.runtime_config.kafkaTopic.partitions[0].isrCount
-    }
-  })
-  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_topic_list_confluent.json`, JSON.stringify(topic_list, null, 2), (err) => {
+  fs.writeFile(`terraform-config/${EP_CONFIG.target_messaging_service.name}_topic_list_${provider_type}.json`, JSON.stringify(topic_list, null, 2), (err) => {
     if (err) throw err;
    });
 }

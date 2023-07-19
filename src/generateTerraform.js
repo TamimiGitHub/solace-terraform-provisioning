@@ -13,7 +13,7 @@ try {
   let provider_type = ["msk", "confluent"]
   provider_type.map(type => {
     generate_topic_list(EP_CONFIG, type)
-    generate_hcl_json(EP_CONFIG, type)
+    generate_acl_hcl_json(EP_CONFIG, type)
   })
 
 } catch (err) {
@@ -92,7 +92,7 @@ function sortObject(obj) {
   }, {});
 }
 
-function generate_hcl_json(EP_CONFIG, provider_type) {
+function generate_acl_hcl_json(EP_CONFIG, provider_type) {
   let tf = []
   var [operation, topic, app_name, alias, acl_principal] = "" 
   EP_CONFIG.applications.map(application => {

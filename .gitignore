@@ -1,3 +1,4 @@
 node_modules
 terraform-config/*.json
 ep-config/*.json
+.DS_Store

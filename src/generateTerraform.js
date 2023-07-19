@@ -100,10 +100,16 @@ function sortObject(obj) {
 }
 
 function generate_hcl_json_msk(EP_CONFIG) {
-  let tf = []
+  let tf = [{
+    "provider": {
+      "kafka": {
+        "bootstrap_servers": "${var.bootstrap_servers}"
+      }
+    }
+  }]
   var [operation, topic, app_name, alias, acl_principal] = "" 
   EP_CONFIG.applications.map(application => {
-    app_name = application.application_name.replaceAll(" ", "-")
+    app_name = application.application_name.replaceAll(" ", "-").replaceAll("(", "").replaceAll(")", "").replaceAll(">", "").replaceAll("<", "")
     acl_principal = application.acl_principal
 
     // Create resource for all consumed events
@@ -134,7 +140,7 @@ function format_tf_resource(operation, topic, alias, acl_principal) {
         [alias] : {
           "resource_name": topic,
           "resource_type": "Topic",
-          "acl_principal": acl_principal,
+          "acl_principal": `User:${acl_principal}`,
           "acl_host": "*",
           "acl_operation": operation, 
           "acl_permission_type": "Allow"

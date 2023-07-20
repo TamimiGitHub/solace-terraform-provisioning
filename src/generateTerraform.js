@@ -144,13 +144,13 @@ function format_tf_resource(operation, topic, alias, acl_principal, provider_typ
         "resource": {
           "confluent_kafka_acl": {
             [alias] : {
-              "resource_type": "Topic",
+              "resource_type": "TOPIC",
               "resource_name": topic,
               "pattern_type" : "LITERAL",
               "principal": `User:${acl_principal}`,
               "host": "*",
-              "operation" : operation, 
-              "permission": "Allow",
+              "operation" : operation.toUpperCase(), 
+              "permission": "ALLOW",
               "lifecycle" : {
                 "prevent_destroy" : true
               }

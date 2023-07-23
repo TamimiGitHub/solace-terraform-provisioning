@@ -15,9 +15,12 @@ This repo contains tools that will enable moving from Solace PubSub+ Event Porta
 
 Set the following environment variables
 
-- `SOLACE_CLOUD_TOKEN`: Solace Cloud token. Mandatory.
-- `SOLACE_MESSAGING_SERVICE`: The target messaging service to provision. Default: "DEV-Kafka"
-- `CONFLUENT_CLUSTER_USER_ID`: kafka cluster user resource ID. For confluent deployment only. Default:sa-566o5z
+| Env variable name  | Required/Optional | Description | Default |
+| ------------- | ------------- | ------------- | ------------- |
+| `SOLACE_CLOUD_TOKEN`  | Required  | Solace Cloud token | NA |
+| `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | `DEV-Kafka` |
+| `CONFLUENT_CLUSTER_USER_ID`  | Optional  | kafka cluster user resource ID. For confluent deployment only | `sa-566o5z` |
+
 - Rename the `env-config-confluent-TEMPLATE.list` to `env-config-confluent.list` and fill in the required fields
 
 ## Steps

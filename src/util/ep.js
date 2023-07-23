@@ -96,7 +96,24 @@ class EventPortal {
     }
   }
 
-
+  /**
+  * Get Schema by Version ID
+  */
+  async getSchemaByVersionIDs({
+    pageSize = 20,
+    pageNumber = 1,
+    schemaIds = null,
+    ids = null,
+    customAttributes = null
+  } = {} ) {
+    try{
+      let params = {pageSize, pageNumber, schemaIds, ids, customAttributes}
+      if (ids == null) throw new Error("Schema ID must be defined")
+      return await this.api(this.token, 'GET', `schemaVersions`, params)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
   
   async api(token, method, endpoint, params = {}, data = {}) {
     try {

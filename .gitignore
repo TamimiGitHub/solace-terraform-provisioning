@@ -1,4 +1,5 @@
 node_modules
 terraform-config/*.json
 ep-config/*.json
+env-config-confluent.list
 .DS_Store

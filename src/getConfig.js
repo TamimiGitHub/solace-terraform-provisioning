@@ -69,6 +69,9 @@ async function getConfig(){
       let {data: event_parent} = await ep.getEventByID({
         id: eventVersion.eventId
       })
+      let {data: event_schema} = await ep.getSchemaByVersionIDs({
+        ids: eventVersion.schemaVersionId
+      })
       let event_summary = event_parent.customAttributes
                             .filter(attrib => attrib.customAttributeDefinitionName == "runtime-config")
                             .map(rtc => {
@@ -80,7 +83,10 @@ async function getConfig(){
                                 runtime_config: JSON.parse(rtc.value),
                                 producingApplicationsVersions: eventVersion.declaredProducingApplicationVersionIds,
                                 consumingApplicationsVersions: eventVersion.declaredConsumingApplicationVersionIds,
-                                schemaVersionID: eventVersion.schemaVersionId,
+                                schema: {
+                                  schema_version_id: eventVersion.schemaVersionId,
+                                  content: JSON.parse(event_schema[0].content)
+                                },
                               }
                             })
         events.push(event_summary[0])

@@ -5,7 +5,8 @@
   "main": "getConfig.js",
   "scripts": {
     "config": "node src/getConfig.js",
-    "generate": "node src/generateTerraform.js"
+    "generate": "node src/generateTerraform.js",
+    "provision": "npm run config; npm run generate; ./provision.sh"
   },
   "keywords": [
     "solace",
@@ -18,3 +19,6 @@
     "fs": "0.0.1-security"
   }
 }
+
+
+

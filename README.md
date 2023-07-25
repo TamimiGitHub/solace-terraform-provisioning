@@ -28,8 +28,12 @@ Set the following environment variables
 1. `npm run promote -- -av <applicationVersionID> -mes <TargetMessagingService>`: Promote an application version and all it's associated events to the target messaging service
 1. `npm run provision`: Provision the underlying kafka cluster to reflect Solace Pubsub+ Event Portal messaging service configuration
 
-- Tip: You can set a different messaging service before running the provisioning script as follows
+### Tips 
+
+- You can set a different messaging service before running the provisioning script as follows
 `SOLACE_MESSAGING_SERVICE="PROD-Kafka" npm run provision`
+- Query the EP configuration file by running `npm run config`
+- Generate the terraform configuration files by running `npm run generate`
 
 ## Note on provisioning steps:
 When running `npm run provision`, the following steps happens:

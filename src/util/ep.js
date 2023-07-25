@@ -86,11 +86,39 @@ class EventPortal {
   * Get application by ID
   */
   async getApplicationByID({
-    id= null,
+    id = null,
   } = {} ) {
     try{
       if (id == null) throw new Error("Application ID must be defined")
       return await this.api(this.token, 'GET', `applications/${id}`)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  /**
+  * Get application by version ID
+  */
+  async getApplicationByVersionID({
+    id = null,
+  } = {} ) {
+    try{
+      if (id == null) throw new Error("Application Version ID must be defined")
+      return await this.api(this.token, 'GET', `applicationVersions/${id}`)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  /**
+  * Get event by version ID
+  */
+  async getEventByVersionID({
+    id = null,
+  } = {} ) {
+    try{
+      if (id == null) throw new Error("Event Version ID must be defined")
+      return await this.api(this.token, 'GET', `eventVersions/${id}`)
     } catch (error) {
       throw new Error(error)
     }
@@ -114,6 +142,44 @@ class EventPortal {
       throw new Error(error)
     }
   }
+ 
+  /**
+  * Promote application version 
+  */
+  async promoteApplicationVersion({
+    id = null,
+    messagingServiceIds = null
+  } = {} ) {
+    try {
+      if (id == null | messagingServiceIds == null) throw new Error("Application Version ID AND Messaging Service IDs must be defined")
+      let params = {}
+      let data = {
+        messagingServiceIds: messagingServiceIds
+      }
+      await this.api(this.token, 'PUT', `applicationVersions/${id}/messagingServices`, params, data)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  /**
+  * Promote event version 
+  */
+  async promoteEventVersion({
+    id = null,
+    messagingServiceIds = null
+  } = {} ) {
+    try {
+      if (id == null | messagingServiceIds == null) throw new Error("Events Version ID AND Messaging Service IDs must be defined")
+      let params = {}
+      let data = {
+        messagingServiceIds: messagingServiceIds
+      }
+      await this.api(this.token, 'PUT', `eventVersions/${id}/messagingServices`, params, data)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
   
   async api(token, method, endpoint, params = {}, data = {}) {
     try {
@@ -126,7 +192,7 @@ class EventPortal {
       Object.entries(params).map( ([key, val]) => {
         val ? endpoint+=`${key}=${val}&` : null
       })
-
+      
       const url = `https://api.solace.cloud/api/v2/architecture/${endpoint}`;
       const response = await axios({
         method,

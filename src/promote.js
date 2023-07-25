@@ -1,10 +1,3 @@
-// Take in application ID and messaging service
-// Query messaging service ID
-// Query all application versions. Take the latest
-// Store consumed and produced event versions and associated messaging service 
-// Promote application version to target messaging service ID: add MES_ID to existing MES array
-// Promote event versions to target messaging service ID: add MES_ID to existing MES array
-
 const EventPortal = require('./util/ep')
 const ep = new EventPortal()
 const commander = require("commander");
@@ -37,7 +30,6 @@ async function main() {
   let {data: applicationVersionObject} = await ep.getApplicationByVersionID({
     id: options.applicationVersionID
   })
-
 
   // Get list of produced and consumed events of application version
   let consumedEventsVersions = applicationVersionObject.declaredConsumedEventVersionIds
@@ -83,7 +75,6 @@ async function promote({
   }
 
 }
-
 
 if (require.main === module) {
   main();

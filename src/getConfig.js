@@ -12,11 +12,11 @@ async function getConfig(){
     target_ms = ms.filter(service => service.name == target_messaging_service)
     
     if (target_ms.length == 0) 
-      throw new Error(`No messageing service with the name '${target_messaging_service}' found`)
+      throw new Error(`No messaging service with the name '${target_messaging_service}' found`)
       
     EP_CONFIG.target_messaging_service = target_ms[0]
 
-    // Get all the applicaiton versions associated with the target messaging service
+    // Get all the applications versions associated with the target messaging service
     console.log(`Fetching all applications in '${target_messaging_service}' MS`)
     let {data: av} = await ep.getApplicationVersions({
       messagingServiceIds: target_ms[0].id

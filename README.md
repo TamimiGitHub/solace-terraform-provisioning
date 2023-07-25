@@ -19,7 +19,7 @@ Set the following environment variables
 | ------------- | ------------- | ------------- | ------------- |
 | `SOLACE_CLOUD_TOKEN`  | Required  | Solace Cloud token | NA |
 | `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | `DEV-Kafka` |
-| `CONFLUENT_CLUSTER_USER_ID`  | Optional  | kafka cluster user resource ID. For confluent deployment only | `sa-566o5z` |
+| `CONFLUENT_CLUSTER_RESOURCE_ID`  | Optional  | kafka cluster user resource ID. For confluent deployment only | `sa-566o5z` |
 
 - Rename the `env-config-confluent-TEMPLATE.list` to `env-config-confluent.list` and fill in the required fields
 

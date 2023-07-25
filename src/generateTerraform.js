@@ -1,11 +1,7 @@
 const fs = require('fs')
 
-// Input: EP_CONFIG
-// Output:
-//    1. Topics in JSON format. See confluent example
-//    2. ACLs in HCL format - Terraform Resource
-
-const CONFLUENT_CLUSTER_USER_ID = process.env.CONFLUENT_CLUSTER_USER_ID || "sa-566o5z"
+// Globals
+const CONFLUENT_CLUSTER_RESOURCE_ID = process.env.CONFLUENT_CLUSTER_RESOURCE_ID || "sa-566o5z"
 const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || "DEV-Kafka"
 
 try {
@@ -150,7 +146,7 @@ function format_tf_resource(operation, topic, alias, acl_principal, provider_typ
               "resource_type": "TOPIC",
               "resource_name": topic,
               "pattern_type" : "LITERAL",
-              "principal": `User:${CONFLUENT_CLUSTER_USER_ID}`,
+              "principal": `User:${CONFLUENT_CLUSTER_RESOURCE_ID}`,
               "host": "*",
               "operation" : operation.toUpperCase(), 
               "permission": "ALLOW",

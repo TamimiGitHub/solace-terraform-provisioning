@@ -79,4 +79,3 @@ async function promote({
 if (require.main === module) {
   main();
 }
-

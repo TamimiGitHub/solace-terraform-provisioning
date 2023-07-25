@@ -25,6 +25,7 @@ Set the following environment variables
 
 ## Steps
 1. `npm i`: install the required dependencies
+1. `npm run promote -- -av <applicationVersionID> -mes <TargetMessagingService>`: Promote an application version and all it's associated events to the target messaging service
 1. `npm run provision`: Provision the underlying kafka cluster to reflect Solace Pubsub+ Event Portal messaging service configuration
 
 - Tip: You can set a different messaging service before running the provisioning script as follows

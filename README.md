@@ -45,3 +45,6 @@ When running `npm run provision`, the following steps happens:
 
 1. `{Messaging_Service}_topic_list_{Broker_Provider_Type}.json` - Contains the list of topics in the target messaging service to be provisioned 
 1. `{Messaging_Service}_acl_terraform_{Broker_Provider_Type}.json` - Contains the ACL configuration in HCL format to be provisioned
+
+## Flow
+![flow](./flow.png)

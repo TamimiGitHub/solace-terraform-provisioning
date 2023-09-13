@@ -1,0 +1,106 @@
+{
+    "data": {
+        "confluent_schema_registry_region": {
+            "essentials": [
+                {
+                    "cloud": "AWS",
+                    "package": "ESSENTIALS",
+                    "region": "us-east-2"
+                }
+            ]
+        }
+    },
+    "resource": {
+        "confluent_api_key": {
+          "app-manager-$ENVNAME-kafka-api-key": [
+              {
+                "depends_on": ["confluent_role_binding.app-manager-kafka-cluster-admin-$ENVNAME"],
+                "description": "Kafka API Key that is owned by 'app-manager' service account",
+                "display_name": "app-manager-$ENVNAME-kafka-api-key",
+                "managed_resource": [
+                    {
+                        "api_version": "${confluent_kafka_cluster.cluster-$ENVNAME.api_version}",
+                        "environment": [
+                            {
+                                "id": "${confluent_environment.$ENVNAME.id}"
+                            }
+                        ],
+                        "id": "${confluent_kafka_cluster.cluster-$ENVNAME.id}",
+                        "kind": "${confluent_kafka_cluster.cluster-$ENVNAME.kind}"
+                    }
+                ],
+                "owner": [
+                    {
+                        "api_version": "${confluent_service_account.app-manager-$ENVNAME.api_version}",
+                        "id": "${confluent_service_account.app-manager-$ENVNAME.id}",
+                        "kind": "${confluent_service_account.app-manager-$ENVNAME.kind}"
+                    }
+                ]
+              }
+          ]
+        },
+        "confluent_environment": {
+            "$ENVNAME": [
+                {
+                    "display_name": "$ENVNAME"
+                }
+            ]
+        },
+        "confluent_kafka_cluster": {
+          "cluster-$ENVNAME": [
+              {
+                  "availability": "SINGLE_ZONE",
+                  "basic": [
+                      {}
+                  ],
+                  "cloud": "AWS",
+                  "display_name": "$ENVNAME",
+                  "environment": [
+                      {
+                          "id": "${confluent_environment.$ENVNAME.id}"
+                      }
+                  ],
+                  "region": "us-east-2"
+              }
+          ]
+        },
+        "confluent_kafka_acl": {
+        },
+        "confluent_kafka_topic" : {
+        },
+        "confluent_role_binding": {
+          "app-manager-kafka-cluster-admin-$ENVNAME": [
+              {
+                  "crn_pattern": "${confluent_kafka_cluster.cluster-$ENVNAME.rbac_crn}",
+                  "principal": "User:${confluent_service_account.app-manager-$ENVNAME.id}",
+                  "role_name": "CloudClusterAdmin"
+              }
+          ]
+        },
+        "confluent_schema_registry_cluster": {
+          "essentials-$ENVNAME": [
+              {
+                  "environment": [
+                      {
+                          "id": "${confluent_environment.$ENVNAME.id}"
+                      }
+                  ],
+                  "package": "${data.confluent_schema_registry_region.essentials.package}",
+                  "region": [
+                      {
+                          "id": "${data.confluent_schema_registry_region.essentials.id}"
+                      }
+                  ]
+              }
+          ]
+        },
+        "confluent_service_account": {
+          "app-manager-$ENVNAME": [
+            {
+                "description": "Service account to manage '$ENVNAME' Kafka cluster",
+                "display_name": "app-manager-$ENVNAME"
+            }
+          ]
+        }
+    }
+}

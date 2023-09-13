@@ -1,0 +1,120 @@
+{
+    "provider": {
+        "solace": [
+            {
+                "hostname": "mr-connection-6tvbh2lqo1y.messaging.solace.cloud:943",
+                "password": "hct9i0mbjgcr2n3b0ev1ccvi1a",
+                "scheme": "https",
+                "username": "us-central-dev-admin"
+            }
+        ]
+    },
+    "resource": {
+        "solace_aclprofile": {
+            "fedex_aclprofile": [
+                {
+                    "acl_profile_name": "fedex_aclprofile",
+                    "client_connect_default_action": "allow",
+                    "msg_vpn_name": "us-central-dev",
+                    "publish_topic_default_action": "disallow",
+                    "subscribe_topic_default_action": "disallow"
+                }
+            ],
+            "ups_aclprofile": [
+                {
+                    "acl_profile_name": "ups_aclprofile",
+                    "client_connect_default_action": "allow",
+                    "msg_vpn_name": "us-central-dev",
+                    "publish_topic_default_action": "disallow",
+                    "subscribe_topic_default_action": "disallow"
+                }
+            ]
+        },
+        "solace_aclprofile_publish_exception": {
+            "fedex_allow_pub": [
+                {
+                    "acl_profile_name": "fedex_aclprofile",
+                    "msg_vpn_name": "us-central-dev",
+                    "publish_exception_topic": "acmeretail/fulfillment/order/shipped/v1/fedex/\u003e",
+                    "topic_syntax": "smf"
+                }
+            ],
+            "ups_allow_pub": [
+                {
+                    "acl_profile_name": "ups_aclprofile",
+                    "msg_vpn_name": "us-central-dev",
+                    "publish_exception_topic": "acmeretail/fulfillment/order/shipped/v1/ups/\u003e",
+                    "topic_syntax": "smf"
+                }
+            ]
+        },
+        "solace_aclprofile_subscribe_exception": {
+            "fedex_allow_sub": [
+                {
+                    "acl_profile_name": "fedex_aclprofile",
+                    "msg_vpn_name": "us-central-dev",
+                    "subscribe_exception_topic": "#P2P/QUE/fedex_shipping",
+                    "topic_syntax": "smf"
+                }
+            ],
+            "ups_allow_sub": [
+                {
+                    "acl_profile_name": "ups_aclprofile",
+                    "msg_vpn_name": "us-central-dev",
+                    "subscribe_exception_topic": "#P2P/QUE/ups_shipping",
+                    "topic_syntax": "smf"
+                }
+            ]
+        },
+        "solace_queue": {
+            "fedex_shipping": [
+                {
+                    "access_type": "non-exclusive",
+                    "egress_enabled": true,
+                    "ingress_enabled": true,
+                    "max_ttl": 60,
+                    "msg_vpn_name": "us-central-dev",
+                    "queue_name": "fedex_shipping"
+                }
+            ],
+            "ups_shipping": [
+                {
+                    "access_type": "non-exclusive",
+                    "egress_enabled": true,
+                    "ingress_enabled": true,
+                    "max_ttl": 60,
+                    "msg_vpn_name": "us-central-dev",
+                    "queue_name": "ups_shipping"
+                }
+            ]
+        },
+        "solace_queue_subscription": {
+            "fedex_shipping": [
+                {
+                    "msg_vpn_name": "us-central-dev",
+                    "queue_name": "fedex_shipping",
+                    "subscription_topic": "acmeretail/fulfillment/order/shipped/v1/fedex/\u003e"
+                }
+            ],
+            "ups_shipping": [
+                {
+                    "msg_vpn_name": "us-central-dev",
+                    "queue_name": "ups_shipping",
+                    "subscription_topic": "acmeretail/fulfillment/order/shipped/v1/ups/\u003e"
+                }
+            ]
+        }
+    },
+    "terraform": [
+        {
+            "required_providers": [
+                {
+                    "solace": {
+                        "source": "telus-agcg/solace",
+                        "version": "0.8.7"
+                    }
+                }
+            ]
+        }
+    ]
+}

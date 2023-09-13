@@ -1,15 +1,26 @@
+# confluent-topics or kafka-topics
 TF_MODULE=
+# Name of AWS bucket. HAS to be pre-existent
 TF_BACKEND_S3_BUCKET=
-# Cluster terraform-dev 
+# No need to precreate. Follow <env>/<cluster>/<terraform.tfstate format
 TF_BACKEND_S3_BUCKET_KEY=
+# Could be commented out
 TF_BACKEND_DYNAMODB_LOCK_TABLE=
+# AWS region
 AWS_REGION=
+# AWS access key: IAM add user - all access to S3 Bucket
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 
+# Get from confluent cloud: set admin previllages
 TF_VAR_cloud_api_key=
 TF_VAR_cloud_api_secret=
+
+# Super user api key. NOT service account. Set with global access to cluster
 TF_VAR_kafka_api_key=
 TF_VAR_kafka_api_secret=
+
+# Cluster end point frmo cluster setting
 TF_VAR_kafka_rest_endpoint=
+# Cluster ID
 TF_VAR_kafka_id=

@@ -1,10 +1,14 @@
 const fs = require('fs')
 
 // Globals
-const CONFLUENT_CLUSTER_RESOURCE_ID = process.env.CONFLUENT_CLUSTER_RESOURCE_ID || "sa-566o5z"
+const CONFLUENT_CLUSTER_RESOURCE_ID = process.env.CONFLUENT_CLUSTER_RESOURCE_ID
 const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || "DEV-Kafka"
 
 try {
+  if (!CONFLUENT_CLUSTER_RESOURCE_ID) {
+    console.log(' == You must define CONFLUENT_CLUSTER_RESOURCE_ID as an environment variable !! == ')
+  }
+
   const EP_CONFIG = JSON.parse(fs.readFileSync(`ep-config/${target_messaging_service}.json`, 'utf8'))
 
   // Generate Topic and ACL Resource Terraform configuration files for the list of providers

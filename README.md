@@ -5,11 +5,21 @@ This repo contains tools that will enable moving from Solace PubSub+ Event Porta
 1. Confluent Cloud
 1. MSK 
 1. Vanilla Kafka
+1. Solace
 
 ## Environment setup
 
 - Node 16+
 - Docker v 20.10+
+
+## Providers
+
+Configurations for the following providers are generated: 
+
+1. [Confluent Cloud](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs)
+1. [Vanilla Kafka](https://registry.terraform.io/providers/Mongey/kafka/latest/docs)
+1. [Solace TelusAg](https://registry.terraform.io/providers/TelusAg/solace/latest)
+1. Solace Native
 
 ## Prerequisites
 
@@ -18,10 +28,13 @@ Set the following environment variables
 | Env variable name  | Required/Optional | Description | Default |
 | ------------- | ------------- | ------------- | ------------- |
 | `SOLACE_CLOUD_TOKEN`  | Required  | Solace Cloud token | NA |
-| `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | `DEV-Kafka` |
-| `CONFLUENT_CLUSTER_RESOURCE_ID`  | Optional  | kafka cluster user resource ID. For confluent deployment only | `sa-566o5z` |
+| `TF_VAR_confluent_cloud_api_key`  | Required  | Confluent cloud API Key | NA |
+| `TF_VAR_confluent_cloud_api_secret`  | Required  | Confluent cloud API Secret | NA |
+| `AWS_ACCESS_KEY_ID`  | Required  | AWS Key ID | NA |
+| `AWS_SECRET_ACCESS_KEY`  | Required  | AWS Access Key | NA |
+| `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | The first messaging service in EP |
 
-- Rename the `env-config-confluent-TEMPLATE.list` to `env-config-confluent.list` and fill in the required fields
+- Bucket name `confluent-dynamic-envs` must exist on S3
 
 ## Steps
 1. `npm i`: install the required dependencies
@@ -48,3 +61,6 @@ When running `npm run provision`, the following steps happens:
 
 ## Flow
 ![flow](./flow.png)
+
+## Todo 
+- [ ] Promotion logic to take AsyncAPI spec as parameter instead of applicationID

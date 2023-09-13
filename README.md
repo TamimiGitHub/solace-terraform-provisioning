@@ -38,8 +38,8 @@ Set the following environment variables
 
 ## Steps
 1. `npm i`: install the required dependencies
-1. `npm run promote -- -av <applicationVersionID> -mes <TargetMessagingService>`: Promote an application version and all it's associated events to the target messaging service
-1. `npm run provision`: Provision the underlying kafka cluster to reflect Solace Pubsub+ Event Portal messaging service configuration
+1. `npm run promote -- -f <path_to_AsyncAPI_specfile> -mes <Target_Messaging_Service>`: Promote an application version and all it's associated events to the target messaging service
+1. `SOLACE_MESSAGING_SERVICE=<Target_Messaging_Service> npm run provision`: Provision the underlying kafka cluster to reflect Solace Pubsub+ Event Portal messaging service configuration
 
 ### Tips 
 
@@ -54,13 +54,5 @@ When running `npm run provision`, the following steps happens:
 - Generate terraform configuration files for all supported broker providers and store in [terraform-config](./terraform-config)
 - Provision the underlying cluster
 
-## Configuration Files
-
-1. `{Messaging_Service}_topic_list_{Broker_Provider_Type}.json` - Contains the list of topics in the target messaging service to be provisioned 
-1. `{Messaging_Service}_acl_terraform_{Broker_Provider_Type}.json` - Contains the ACL configuration in HCL format to be provisioned
-
 ## Flow
 ![flow](./flow.png)
-
-## Todo 
-- [ ] Promotion logic to take AsyncAPI spec as parameter instead of applicationID

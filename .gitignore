@@ -1,5 +1,8 @@
 node_modules
-terraform-config/*.json
+terraform-config/*
+!terraform-config/README.md
 ep-config/*.json
 env-config-confluent.list
 .DS_Store
+test-runs
+setenv.sh

@@ -5,10 +5,12 @@ const fs = require('fs')
 async function getConfig(){
   try {
     const EP_CONFIG = {}
-    const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || "DEV-Kafka"
-    
-    // Get the target messaging service
     let {data: ms} = await ep.getMessagingServices()
+    if (ms.length == 0) 
+      throw new Error(`No messaging services configured in Solace PubSub+ Event Portal`)
+    
+    const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || ms[0].name
+    // Get the target messaging service object
     target_ms = ms.filter(service => service.name == target_messaging_service)
     
     if (target_ms.length == 0) 
@@ -23,7 +25,7 @@ async function getConfig(){
     })
 
     if (av.length == 0) 
-      throw new Error(`No application versions in ${target_messaging_service} messaging service found`)
+      throw new Error(`No application versions in  {target_messaging_service} messaging service found`)
     
     let consumedEventsVersions = []
     let producedEventsVersions = []
@@ -34,13 +36,15 @@ async function getConfig(){
       let {data: application_parent} = await ep.getApplicationByID({
         id: applicationVersion.applicationId
       })
-      
+
       let app_summary = application_parent.customAttributes.filter(attrib =>attrib.customAttributeDefinitionName == "acl-principal")
                             .map(aclp => {
                               return {
                                 application_name: application_parent.name,
                                 application_id: application_parent.id,
+                                brokerType: application_parent.brokerType,
                                 acl_principal: aclp.value,
+                                consumer_object: applicationVersion.consumers,
                                 consumedEventsVersions: applicationVersion.declaredConsumedEventVersionIds,
                                 producedEventsVersions: applicationVersion.declaredProducedEventVersionIds,
                               }
@@ -53,7 +57,18 @@ async function getConfig(){
     // EP_CONFIG.events_in_MS = events_in_MS
     EP_CONFIG.applications = applications
 
-    // Get all the event versions associated with the target messaging service
+    switch (brokerType) {
+      case "kafka":
+        getKafkaEvents()
+        break;
+      case "solace":
+        getKafkaEvents()
+        break;
+      default:
+        break;
+    }
+
+    // Get all the event versions associated with the target messaging service IF broker_type == Kafka
     console.log(`Fetching all events in '${target_messaging_service}' MS`)
     let {data: ev} = await ep.getEventVersions({
       messagingServiceIds: target_ms[0].id

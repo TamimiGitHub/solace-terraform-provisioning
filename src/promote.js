@@ -1,6 +1,9 @@
 const EventPortal = require('./util/ep')
 const ep = new EventPortal()
-const commander = require("commander");
+const commander = require("commander")
+const fs = require('fs')
+const path = require('path');
+const YAML = require('yaml')
 
 async function main() {
   commander
@@ -11,8 +14,8 @@ async function main() {
     .version("0.0.1", "-v, --version")
     .usage("[OPTIONS]...")
     .requiredOption(
-      "-av, --applicationVersionID <ApplicationVersionID>",
-      "The ID of the application version to be promoted"
+      "-f, --specFilePath <AsyncAPI file path>",
+      "The path to the AsyncAPI spec file to extract eh application version ID to be promoted"
     )
     .requiredOption(
       "-mes, --messagingService <Messaging Service Name>",
@@ -22,13 +25,30 @@ async function main() {
 
   const options = commander.opts();
 
+  let spec = fs.readFileSync(`${options.specFilePath}`, 'utf8')
+
+  switch (path.extname(options.specFilePath)) {
+    case ".json":
+      spec = JSON.parse(spec)
+      break
+    case ".yaml":
+    case ".yml":
+      spec = YAML.parse(spec)
+      break
+    default:
+      throw new Error("Extension not supported")
+  }
+  let applicationVersionID = spec.info['x-ep-application-version-id']
   // Get the target messaging service object from EP
   let {data: ms} = await ep.getMessagingServices()
   targetMs = ms.filter(service => service.name == options.messagingService)
 
+  if (targetMs.length == 0) 
+      throw new Error(`No messaging service with the name '${options.messagingService}' found`)
+
   // Get the application version object from EP
   let {data: applicationVersionObject} = await ep.getApplicationByVersionID({
-    id: options.applicationVersionID
+    id: applicationVersionID
   })
 
   // Get list of produced and consumed events of application version
@@ -38,7 +58,9 @@ async function main() {
   promote({
     applicationVersion: applicationVersionObject,
     eventVersionIDs: eventsToPromote,
-    messagingServiceID: targetMs[0].id
+    messagingServiceID: targetMs[0].id,
+    messagingServiceName: options.messagingService,
+    applicationName: spec.info.title
   })
 
 }
@@ -47,6 +69,8 @@ async function promote({
   applicationVersion = null,
   eventVersionIDs = null,
   messagingServiceID = null, 
+  messagingServiceName = null, 
+  applicationName = null, 
 } = {}) {
   if (applicationVersion && eventVersionIDs == null)
     throw new Error("Promotion requires application version or event version IDs")
@@ -74,6 +98,7 @@ async function promote({
     })
   }
 
+  console.log(`Application ${applicationName} successfully promoted to ${messagingServiceName}!`)
 }
 
 if (require.main === module) {

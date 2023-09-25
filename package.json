@@ -7,7 +7,8 @@
     "config": "node src/getConfig.js",
     "generate": "node src/generateTerraform.js",
     "promote": "node src/promote.js",
-    "provision": "npm run config; npm run generate; cd terraform-config; terraform init -reconfigure; terraform plan -out=tfplan -input=false; terraform apply -input=false tfplan"
+    "provision": "npm run config; npm run generate; cd terraform-config; terraform init -reconfigure; terraform plan -out=tfplan -input=false; terraform apply -input=false tfplan",
+    "plan": "npm run config; npm run generate; cd terraform-config; terraform init -reconfigure; terraform plan -out=tfplan -input=false"
   },
   "keywords": [
     "solace",

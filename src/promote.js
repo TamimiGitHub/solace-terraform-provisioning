@@ -21,6 +21,7 @@ async function main() {
       "-mes, --messagingService <Messaging Service Name>",
       "The target messaging service to promote to"
     )
+    .option('-d, --demote', 'Demote the passed application')
     .parse(process.argv);
 
   const options = commander.opts();
@@ -55,14 +56,24 @@ async function main() {
   let consumedEventsVersions = applicationVersionObject.declaredConsumedEventVersionIds
   let producedEventsVersions = applicationVersionObject.declaredProducedEventVersionIds
   let eventsToPromote = Array.from(new Set(consumedEventsVersions.flat().concat(producedEventsVersions.flat())));
-  promote({
-    applicationVersion: applicationVersionObject,
-    eventVersionIDs: eventsToPromote,
-    messagingServiceID: targetMs[0].id,
-    messagingServiceName: options.messagingService,
-    applicationName: spec.info.title
-  })
 
+  if (options.demote == true ) {
+    demote({
+      applicationVersion: applicationVersionObject,
+      eventVersionIDs: eventsToPromote,
+      messagingServiceID: targetMs[0].id,
+      messagingServiceName: options.messagingService,
+      applicationName: spec.info.title
+    })
+  } else {
+    promote({
+      applicationVersion: applicationVersionObject,
+      eventVersionIDs: eventsToPromote,
+      messagingServiceID: targetMs[0].id,
+      messagingServiceName: options.messagingService,
+      applicationName: spec.info.title
+    })
+  }
 }
 
 async function promote({
@@ -100,6 +111,43 @@ async function promote({
 
   console.log(`Application ${applicationName} successfully promoted to ${messagingServiceName}!`)
 }
+
+async function demote({
+  applicationVersion = null,
+  eventVersionIDs = null,
+  messagingServiceID = null, 
+  messagingServiceName = null, 
+  applicationName = null, 
+} = {}) {
+  if (applicationVersion && eventVersionIDs == null)
+    throw new Error("Promotion requires application version or event version IDs")
+  
+    if (messagingServiceID == null)
+      throw new Error("Promotion requires target messaging service")
+  
+  // Execute demotion logic for application versions
+  await ep.promoteApplicationVersion({
+    id: applicationVersion.id,
+    messagingServiceIds: Array.from(new Set(applicationVersion.messagingServiceIds.filter(a => a !== messagingServiceID)))
+  })
+
+  // Execute demotion logic for event versions
+  // First, get existing messaging services for every event
+  // Then add the new messaging service ID to the list
+
+  for (const eventVersionID of eventVersionIDs) {
+    let {data: eventVersionObject} = await ep.getEventByVersionID({
+      id: eventVersionID
+    })
+    await ep.promoteEventVersion({
+      id: eventVersionID,
+      messagingServiceIds: Array.from(new Set(eventVersionObject.messagingServiceIds.filter(a => a !== messagingServiceID)))
+    })
+  }
+
+  console.log(`Application ${applicationName} successfully demoted from ${messagingServiceName}!`)
+}
+
 
 if (require.main === module) {
   main();

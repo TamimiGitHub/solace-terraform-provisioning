@@ -10,7 +10,7 @@ This repo contains tools that will enable moving from Solace PubSub+ Event Porta
 ## Environment setup
 
 - Node 16+
-- Docker v 20.10+
+- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 
 ## Providers
 

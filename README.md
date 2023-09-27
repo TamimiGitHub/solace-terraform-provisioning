@@ -47,6 +47,7 @@ Set the following environment variables
 `SOLACE_MESSAGING_SERVICE="PROD-Kafka" npm run provision`
 - Query the EP configuration file by running `npm run config`
 - Generate the terraform configuration files by running `npm run generate`
+- You can demote an application from an environment by passing a `-d` flag to the promote script as follows `npm run promote -- -f <path_to_AsyncAPI_specfile> -mes <Target_Messaging_Service> -d`
 
 ## Note on provisioning steps:
 When running `npm run provision`, the following steps happens:

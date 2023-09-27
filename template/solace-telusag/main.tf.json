@@ -1,0 +1,14 @@
+{
+  "resource": {
+      "solace_aclprofile": {
+      },
+      "solace_aclprofile_publish_exception": {
+      },
+      "solace_aclprofile_subscribe_exception": {
+      },
+      "solace_queue": {
+      },
+      "solace_queue_subscription": {
+      }
+  }
+}

@@ -56,11 +56,12 @@ async function main() {
   let consumedEventsVersions = applicationVersionObject.declaredConsumedEventVersionIds
   let producedEventsVersions = applicationVersionObject.declaredProducedEventVersionIds
   let eventsToPromote = Array.from(new Set(consumedEventsVersions.flat().concat(producedEventsVersions.flat())));
+  let eventsToDemote = Array.from(new Set(producedEventsVersions.flat()));
 
   if (options.demote == true ) {
     demote({
       applicationVersion: applicationVersionObject,
-      eventVersionIDs: eventsToPromote,
+      eventVersionIDs: eventsToDemote,
       messagingServiceID: targetMs[0].id,
       messagingServiceName: options.messagingService,
       applicationName: spec.info.title

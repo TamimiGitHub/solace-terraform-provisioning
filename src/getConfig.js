@@ -5,14 +5,14 @@ const fs = require('fs')
 async function getConfig(){
   try {
     const EP_CONFIG = {}
-    const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || "DEV-Kafka"
-    
-    // Get the target messaging service
     let {data: ms} = await ep.getMessagingServices()
-    target_ms = ms.filter(service => service.name == target_messaging_service)
+    if (ms.length == 0) 
+      throw new Error(`No messaging services configured in Solace PubSub+ Event Portal`)
     
-    if (target_ms.length == 0) 
-      throw new Error(`No messaging service with the name '${target_messaging_service}' found`)
+    // Set target messaging service to env variable. Default to first messaging service
+    const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE || ms[0].name
+    // Get the target messaging service object
+    target_ms = ms.filter(service => service.name == target_messaging_service)
       
     EP_CONFIG.target_messaging_service = target_ms[0]
 
@@ -28,6 +28,7 @@ async function getConfig(){
     let consumedEventsVersions = []
     let producedEventsVersions = []
     let applications = []
+    
     // Get parent application of all application versions
     console.log(`Fetching configurations for every application in '${target_messaging_service}' MS`)
     for (const applicationVersion of av) {
@@ -45,54 +46,60 @@ async function getConfig(){
                                 producedEventsVersions: applicationVersion.declaredProducedEventVersionIds,
                               }
                             })
+      // Add consumer object for solace broker type
+      EP_CONFIG.target_messaging_service.messagingServiceType == "solace" ? app_summary[0].consumers = applicationVersion.consumers : null
       applications.push(app_summary[0])
       consumedEventsVersions.push(applicationVersion.declaredConsumedEventVersionIds)
       producedEventsVersions.push(applicationVersion.declaredProducedEventVersionIds)
     }
+
     let events_in_MS = Array.from(new Set(consumedEventsVersions.flat().concat(producedEventsVersions.flat())));
-    // EP_CONFIG.events_in_MS = events_in_MS
     EP_CONFIG.applications = applications
 
-    // Get all the event versions associated with the target messaging service
-    console.log(`Fetching all events in '${target_messaging_service}' MS`)
-    let {data: ev} = await ep.getEventVersions({
-      messagingServiceIds: target_ms[0].id
-    })
-
-    if (ev.length == 0) 
-      throw new Error(`No event versions in '${target_messaging_service}' messaging service found`)
-
-    // Get parent events of all event versions
-    console.log(`Fetching configurations for every event in '${target_messaging_service}' MS`)
-    let events = []
-    for (const eventVersion of ev) {
-      let {data: event_parent} = await ep.getEventByID({
-        id: eventVersion.eventId
+    if (EP_CONFIG.target_messaging_service.messagingServiceType == "kafka") {
+      // Get all the event versions associated with the target messaging service
+      console.log(`Fetching all events in '${target_messaging_service}' MS`)
+      let {data: ev} = await ep.getEventVersions({
+        messagingServiceIds: target_ms[0].id
       })
-      let {data: event_schema} = await ep.getSchemaByVersionIDs({
-        ids: eventVersion.schemaVersionId
-      })
-      let event_summary = event_parent.customAttributes
-                            .filter(attrib => attrib.customAttributeDefinitionName == "runtime-config")
-                            .map(rtc => {
-                              return {
-                                event_name: event_parent.name,
-                                topic: eventVersion.deliveryDescriptor.address.addressLevels[0].name,
-                                event_id: event_parent.id,
-                                event_version_id: eventVersion.id,
-                                runtime_config: JSON.parse(rtc.value),
-                                producingApplicationsVersions: eventVersion.declaredProducingApplicationVersionIds,
-                                consumingApplicationsVersions: eventVersion.declaredConsumingApplicationVersionIds,
-                                schema: {
-                                  schema_version_id: eventVersion.schemaVersionId,
-                                  content: JSON.parse(event_schema[0].content)
-                                },
-                              }
-                            })
-        events.push(event_summary[0])
+  
+      if (ev.length == 0) 
+        throw new Error(`No event versions in '${target_messaging_service}' messaging service found`)
+  
+      // Get parent events of all event versions
+      console.log(`Fetching configurations for every event in '${target_messaging_service}' MS`)
+      let events = []
+      for (const eventVersion of ev) {
+        let {data: event_parent} = await ep.getEventByID({
+          id: eventVersion.eventId
+        })
+        let {data: event_schema} = await ep.getSchemaByVersionIDs({
+          ids: eventVersion.schemaVersionId
+        })
+        let event_summary = event_parent.customAttributes
+                              .filter(attrib => attrib.customAttributeDefinitionName == "runtime-config")
+                              .map(rtc => {
+                                return {
+                                  event_name: event_parent.name,
+                                  topic: eventVersion.deliveryDescriptor.address.addressLevels[0].name,
+                                  event_id: event_parent.id,
+                                  event_version_id: eventVersion.id,
+                                  runtime_config: JSON.parse(rtc.value),
+                                  producingApplicationsVersions: eventVersion.declaredProducingApplicationVersionIds,
+                                  consumingApplicationsVersions: eventVersion.declaredConsumingApplicationVersionIds,
+                                  schema: {
+                                    schema_version_id: eventVersion.schemaVersionId,
+                                    content: JSON.parse(event_schema[0].content)
+                                  },
+                                }
+                              })
+          events.push(event_summary[0])
+      }
+      EP_CONFIG.events = events
+    } else if (EP_CONFIG.target_messaging_service.messagingServiceType == "solace") {
+      // Figure something out with producing events
+      EP_CONFIG.events = events_in_MS
     }
-    EP_CONFIG.events = events
-
     console.log(`There are ${EP_CONFIG.applications.length} applications and  ${EP_CONFIG.events.length} event associated with the '${target_messaging_service}' messging service`)
 
     fs.writeFile(`ep-config/${target_messaging_service}.json`, JSON.stringify(EP_CONFIG, null, 2), (err) => {

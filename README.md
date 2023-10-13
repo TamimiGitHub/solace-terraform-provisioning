@@ -17,9 +17,7 @@ This repo contains tools that will enable moving from Solace PubSub+ Event Porta
 Configurations for the following providers are generated: 
 
 1. [Confluent Cloud](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs)
-1. [Vanilla Kafka](https://registry.terraform.io/providers/Mongey/kafka/latest/docs)
-1. [Solace TelusAg](https://registry.terraform.io/providers/TelusAg/solace/latest)
-1. Solace Native
+1. [Solace Native](https://registry.terraform.io/providers/SolaceProducts/solacebroker/latest)
 
 ## Prerequisites
 
@@ -36,7 +34,7 @@ Set the following environment variables
 | `SOL_MSG_VPN`  | Required  | Solace Broker message VPN | terraform | Solace |
 | `AWS_ACCESS_KEY_ID`  | Required  | AWS Key ID | NA | Confluent + Solace |
 | `AWS_SECRET_ACCESS_KEY`  | Required  | AWS Access Key | NA | Confluent + Solace |
-| `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | The first messaging service in EP |
+| `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | The first messaging service in EP | Solace + Confluent |
 
 - Bucket name `confluent-dynamic-envs` must exist on S3
 

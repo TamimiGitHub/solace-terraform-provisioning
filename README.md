@@ -3,8 +3,6 @@
 This repo contains tools that will enable moving from Solace PubSub+ Event Portal to infrastructure provisioning. The following broker types providers are supported:
 
 1. Confluent Cloud
-1. MSK 
-1. Vanilla Kafka
 1. Solace
 
 ## Environment setup

@@ -144,6 +144,21 @@ class EventPortal {
   }
  
   /**
+  * Get topic hierarchy given the event version ID
+  */
+    async getTopicHierarchy({
+      id = null,
+    } = {} ) {
+      try{
+        if (id == null) throw new Error("Event Version ID must be defined")
+        let params = {}
+        return await this.api(this.token, 'GET', `eventVersions/${id}`, params)
+      } catch (error) {
+        throw new Error(error)
+      }
+    }
+
+  /**
   * Promote application version 
   */
   async promoteApplicationVersion({

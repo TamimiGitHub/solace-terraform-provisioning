@@ -1,0 +1,9 @@
+{
+    "resource": {
+      "solacebroker_msg_vpn_queue": {},
+      "solacebroker_msg_vpn_queue_subscription": {},
+      "solacebroker_msg_vpn_acl_profile": {},
+      "solacebroker_msg_vpn_acl_profile_subscribe_topic_exception": {},
+      "solacebroker_msg_vpn_acl_profile_publish_topic_exception": {}
+    }
+}

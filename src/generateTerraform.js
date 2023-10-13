@@ -2,13 +2,16 @@ const fs = require('fs')
 
 // Globals
 const target_messaging_service = process.env.SOLACE_MESSAGING_SERVICE
-const broker_type = process.env.BROKER_TYPE || "confluent"
+let broker_type = process.env.BROKER_TYPE || "confluent"
+const SOL_MSG_VPN = process.env.SOL_MSG_VPN || "terraform"
 
 if (!target_messaging_service) {
   throw new Error('You must define a target messaging service as an environment variable !!')
 }
 
 const EP_CONFIG = JSON.parse(fs.readFileSync(`ep-config/${target_messaging_service}.json`, 'utf8'))
+
+EP_CONFIG.target_messaging_service.messagingServiceType == "solace" ? broker_type = "solace" : null
 
 try {
 
@@ -19,11 +22,11 @@ try {
 
   switch (broker_type) {
     case "confluent":
-       // Read confluent specific templates
+      // Read confluent specific templates
       generate_confluent_config(main_tf_json, providers_tf, variables_tf)
       break;
     case "solace":
-      generate_solace_config()
+      generate_solace_config(main_tf_json, providers_tf, variables_tf)
       break;
     default:
       throw new Error(`Generating terraform configurations for Broker Type: ${broker_type} not yet supported`)
@@ -36,7 +39,7 @@ try {
 function generate_confluent_config(main_tf_json, providers_tf, variables_tf) {
   let tf = JSON.parse(main_tf_json)
 
-  tf = populate_resources(tf)
+  tf = populate_confluent_resources(tf)
   tf.resource.confluent_kafka_topic = generate_confluent_kafka_topics()
   
   // Output files
@@ -54,7 +57,7 @@ function generate_confluent_config(main_tf_json, providers_tf, variables_tf) {
   });
 }
 
-function populate_resources(tf) {
+function populate_confluent_resources(tf) {
   var [topic, app_name] = "" 
   EP_CONFIG.applications.map(application => {
     app_name = application.application_name.replaceAll(" ", "-").replaceAll("(", "").replaceAll(")", "").replaceAll(">", "").replaceAll("<", "")
@@ -123,7 +126,7 @@ function generate_confluent_kafka_topics() {
   topic_list = {}
   EP_CONFIG.events.map(event =>{
     topic_list[event.topic] = {
-      config: generate_topic_config(event.runtime_config),
+      config: generate_kafka_topic_config(event.runtime_config),
       partitions_count: event.runtime_config.kafkaTopic.partitions[0].isrCount,
       topic_name: event.topic,
       provider: "confluent.kafka",
@@ -152,7 +155,7 @@ function generate_confluent_kafka_topics() {
   return topic_list
 }
 
-function generate_topic_config(runtime_config){
+function generate_kafka_topic_config(runtime_config){
   let config =  {
       "compression.type": runtime_config.kafkaTopic['compression.type'] ? runtime_config.kafkaTopic['compression.type'].toString() : null,
 			"leader.replication.throttled.replicas": runtime_config.kafkaTopic['leader.replication.throttled.replicas'] ? runtime_config.kafkaTopic['leader.replication.throttled.replicas'].toString() : null,
@@ -203,6 +206,105 @@ function sortObject(obj) {
   }, {});
 }
 
-function generate_solace_config() {
-  console.log("Solace Terraform config generation not yet implemented")
+function generate_solace_config(main_tf_json, providers_tf,variables_tf) {
+  let tf = JSON.parse(main_tf_json)
+  tf = populate_solace_resources(tf)
+
+  // Output files
+  // main.tf.json
+  fs.writeFile(`terraform-config/main.tf.json`, JSON.stringify(tf, null, 2), (err) => {
+    if (err) throw err;
+   });
+  // providers.tf
+  fs.writeFile(`terraform-config/providers.tf`, providers_tf, (err) => {
+    if (err) throw err;
+   });
+   // variables.tf
+  fs.writeFile(`terraform-config/variables.tf`, variables_tf, (err) => {
+    if (err) throw err;
+  });
+}
+
+function populate_solace_resources(tf) {
+  EP_CONFIG.applications.map(application => {
+    let sanitized_app_name = application.application_name.replaceAll(".", "_").replaceAll(" ", "_").replaceAll("(", "").replaceAll(")", "")
+    // Consumers
+    application.consumers.map((consumer) => {
+      if (consumer.consumerType == "eventQueue") {
+        // Queues
+        tf.resource.solacebroker_msg_vpn_queue[`${consumer.name.replaceAll(".", "_")}`] = {
+            "egress_enabled": true,
+            "ingress_enabled": true,
+            "msg_vpn_name": `${SOL_MSG_VPN}`,
+            "queue_name": `${consumer.name}`
+          }
+        
+        // Subscription on queues
+        consumer.subscriptions.map(sub => {
+          if (sub.value) {
+            tf.resource.solacebroker_msg_vpn_queue_subscription[`${consumer.name.replaceAll(".", "_")}_${sub.id}`] = {
+                "msg_vpn_name": `${SOL_MSG_VPN}`,
+                "queue_name": `\${solacebroker_msg_vpn_queue.${consumer.name.replaceAll(".", "_")}.queue_name}`,
+                "subscription_topic": `${sub.value}`
+              }
+          }
+        })
+      } else if (consumer.consumerType == "directClient") {
+        consumer.subscriptions.map(sub => {
+          if (sub.value) {
+            // ACL for Direct Consumer
+            tf.resource.solacebroker_msg_vpn_acl_profile[`${sanitized_app_name}`] = {
+              "acl_profile_name": `${sanitized_app_name.replaceAll("_", "").replaceAll("-", "").substring(0,31)}`,
+              "msg_vpn_name": `${SOL_MSG_VPN}`,
+              "client_connect_default_action": "allow",
+              "publish_topic_default_action": "allow",
+              "subscribe_topic_default_action": "allow"
+            }
+            tf.resource.solacebroker_msg_vpn_acl_profile_subscribe_topic_exception[`${consumer.name.replaceAll(".", "_")}_READ`] = {
+              "acl_profile_name": `\${solacebroker_msg_vpn_acl_profile.${sanitized_app_name}.acl_profile_name}`,
+              "msg_vpn_name": `${SOL_MSG_VPN}`,
+              "subscribe_topic_exception": `${sub.value}`,
+              "subscribe_topic_exception_syntax": "smf"
+            }
+          }
+        })
+      }
+    })
+    // Producers
+    application.producedEventsVersions.map(ev => {
+      tf.resource.solacebroker_msg_vpn_acl_profile[`${sanitized_app_name}`] = {
+        "acl_profile_name": `${sanitized_app_name.replaceAll("_", "").replaceAll("-", "").substring(0,31)}`,
+        "msg_vpn_name": `${SOL_MSG_VPN}`,
+        "client_connect_default_action": "allow",
+        "publish_topic_default_action": "allow",
+        "subscribe_topic_default_action": "allow"
+      }
+      tf.resource.solacebroker_msg_vpn_acl_profile_publish_topic_exception[`${sanitized_app_name}_${ev}`] = {
+        "acl_profile_name": `\${solacebroker_msg_vpn_acl_profile.${sanitized_app_name}.acl_profile_name}`,
+        "msg_vpn_name": `${SOL_MSG_VPN}`,
+        "publish_topic_exception": getTopicHierarcy(ev),
+        "publish_topic_exception_syntax": "smf"
+      }
+    })
+  })
+  return cleanJSON(tf)
+}
+
+function getTopicHierarcy(ev) {
+  return EP_CONFIG.events.filter(event => event.eventVersion == ev)[0].topic_hierarchy
+}
+
+function cleanJSON(obj) {
+  // Remove all empty object from template
+  for (var propName in obj['resource']) {
+    if (isEmpty(obj['resource'][propName])) {
+      console.log(propName)
+      delete obj['resource'][propName];
+    }
+  }
+  return obj
+}
+
+function isEmpty(value) {
+  return value && Object.keys(value).length === 0;
 }

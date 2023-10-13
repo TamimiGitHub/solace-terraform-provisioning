@@ -97,8 +97,20 @@ async function getConfig(){
       }
       EP_CONFIG.events = events
     } else if (EP_CONFIG.target_messaging_service.messagingServiceType == "solace") {
-      // Figure something out with producing events
-      EP_CONFIG.events = events_in_MS
+      console.log(`Fetching configurations for every event in '${target_messaging_service}' MS`)
+      // Populate events topics
+      let events = []
+      for (const eventVersion of events_in_MS) {
+        let {data: event_details} = await ep.getTopicHierarchy({
+          id: eventVersion
+        })
+        let event_summary = {
+          eventVersion: eventVersion, 
+          topic_hierarchy: generateHierarchy(event_details.deliveryDescriptor.address.addressLevels)
+        }
+        events.push(event_summary)
+      }
+      EP_CONFIG.events = events
     }
     console.log(`There are ${EP_CONFIG.applications.length} applications and  ${EP_CONFIG.events.length} event associated with the '${target_messaging_service}' messging service`)
 
@@ -112,3 +124,11 @@ async function getConfig(){
 }
 
 getConfig()
+
+function generateHierarchy(levels) {
+  let topic_string = ""
+  levels.map(level =>{
+    level.addressLevelType == "literal" ? topic_string += level.name + "/" : topic_string += "*/"
+  })
+  return topic_string.slice(0, -1)
+}

@@ -19,22 +19,12 @@ Configurations for the following providers are generated:
 
 ## Prerequisites
 
-Set the following environment variables
+Set the following environment variables based on the provider of choice:
 
-| Env variable name  | Required/Optional | Description | Default | Provider
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| `SOLACE_CLOUD_TOKEN`  | Required  | Solace Cloud token | NA | NA |
-| `TF_VAR_confluent_cloud_api_key`  | Required  | Confluent cloud API Key | NA | Confluent |
-| `TF_VAR_confluent_cloud_api_secret`  | Required  | Confluent cloud API Secret | NA | Confluent |
-| `TF_VAR_solace_url`  | Required  | Solace Broker URL | NA | Solace |
-| `TF_VAR_semp_username`  | Required  | Solace Broker SEMP username | NA | Solace |
-| `TF_VAR_semp_password`  | Required  | Solace Broker SEMP password | NA | Solace |
-| `SOL_MSG_VPN`  | Required  | Solace Broker message VPN | terraform | Solace |
-| `AWS_ACCESS_KEY_ID`  | Required  | AWS Key ID | NA | Confluent + Solace |
-| `AWS_SECRET_ACCESS_KEY`  | Required  | AWS Access Key | NA | Confluent + Solace |
-| `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | The first messaging service in EP | Solace + Confluent |
-
-- Bucket name `confluent-dynamic-envs` must exist on S3
+| Provider  | 
+| ------------- |
+| [Confluent](./template/confluent/envvars.md) |
+| [Solace](./template/solace/envvars.md) |
 
 ## Steps
 1. `npm i`: install the required dependencies

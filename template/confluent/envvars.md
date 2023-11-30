@@ -9,4 +9,4 @@
 | `AWS_SECRET_ACCESS_KEY`  | Required  | AWS Access Key | NA |
 | `SOLACE_MESSAGING_SERVICE`  | Optional  | The target messaging service to provision | The first messaging service in EP |
 
-- Bucket name `confluent-dynamic-envs` must exist on S3
+- Bucket name `terraform-ep-state-files` must exist on S3

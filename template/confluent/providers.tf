@@ -11,7 +11,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "confluent-dynamic-env-2"
+    bucket         = "terraform-ep-state-files"
     key            = "$ENVNAME/terraform.tfstate"
     region         = "us-east-2"
     encrypt        = true

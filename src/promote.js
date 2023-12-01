@@ -14,38 +14,52 @@ async function main() {
     .version("0.0.1", "-v, --version")
     .usage("[OPTIONS]...")
     .requiredOption(
-      "-f, --specFilePath <AsyncAPI file path>",
-      "The path to the AsyncAPI spec file to extract eh application version ID to be promoted"
-    )
-    .requiredOption(
       "-mes, --messagingService <Messaging Service Name>",
       "The target messaging service to promote to"
     )
+    .option(
+      "-f, --specFilePath <AsyncAPI file path>",
+      "The path to the AsyncAPI spec file to extract eh application version ID to be promoted"
+    )
+    .option("-appVID, --applicationVersionID <Application Version ID>", "Application Version ID to promote")
     .option('-d, --demote', 'Demote the passed application')
     .parse(process.argv);
 
   const options = commander.opts();
+  let applicationVersionID = ""
+  let applicationName = ""
 
-  let spec = fs.readFileSync(`${options.specFilePath}`, 'utf8')
-
-  switch (path.extname(options.specFilePath)) {
-    case ".json":
-      spec = JSON.parse(spec)
-      break
-    case ".yaml":
-    case ".yml":
-      spec = YAML.parse(spec)
-      break
-    default:
-      throw new Error("Extension not supported")
+  if (options.specFilePath != undefined) {
+    let spec = fs.readFileSync(`${options.specFilePath}`, 'utf8')
+    switch (path.extname(options.specFilePath)) {
+      case ".json":
+        spec = JSON.parse(spec)
+        break
+      case ".yaml":
+      case ".yml":
+        spec = YAML.parse(spec)
+        break
+      default:
+        throw new Error("Extension not supported")
+    }
+    applicationVersionID = spec.info['x-ep-application-version-id']
+    applicationName = spec.info.title
   }
-  let applicationVersionID = spec.info['x-ep-application-version-id']
+
+  
+  if (options.applicationVersionID != undefined) {
+    applicationVersionID = options.applicationVersionID
+  } 
+  
+  if (applicationVersionID == "") {
+    throw new Error("Application Version ID to be promoted is unknown. Either pass an AsyncAPI spec file with 'x-ep-application-version-id' defined or an applicationVersionID. Run the help option for more information")
+  }
   // Get the target messaging service object from EP
   let {data: ms} = await ep.getMessagingServices()
   targetMs = ms.filter(service => service.name == options.messagingService)
 
-  if (targetMs.length == 0) 
-      throw new Error(`No messaging service with the name '${options.messagingService}' found`)
+  if (targetMs.length == 0)
+    throw new Error(`No messaging service with the name ${options.messagingService} found`)
 
   // Get the application version object from EP
   let {data: applicationVersionObject} = await ep.getApplicationByVersionID({
@@ -64,7 +78,7 @@ async function main() {
       eventVersionIDs: eventsToDemote,
       messagingServiceID: targetMs[0].id,
       messagingServiceName: options.messagingService,
-      applicationName: spec.info.title
+      applicationName: applicationName || applicationVersionID
     })
   } else {
     promote({
@@ -72,7 +86,7 @@ async function main() {
       eventVersionIDs: eventsToPromote,
       messagingServiceID: targetMs[0].id,
       messagingServiceName: options.messagingService,
-      applicationName: spec.info.title
+      applicationName: applicationName || applicationVersionID
     })
   }
 }

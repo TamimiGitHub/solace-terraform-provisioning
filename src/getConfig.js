@@ -35,20 +35,16 @@ async function getConfig(){
       let {data: application_parent} = await ep.getApplicationByID({
         id: applicationVersion.applicationId
       })
-      
-      let app_summary = application_parent.customAttributes.filter(attrib =>attrib.customAttributeDefinitionName == "acl-principal")
-                            .map(aclp => {
-                              return {
-                                application_name: application_parent.name,
-                                application_id: application_parent.id,
-                                acl_principal: aclp.value,
-                                consumedEventsVersions: applicationVersion.declaredConsumedEventVersionIds,
-                                producedEventsVersions: applicationVersion.declaredProducedEventVersionIds,
-                              }
-                            })
+
+      let app_summary = {
+        application_name: application_parent.name,
+        application_id: application_parent.id,
+        consumedEventsVersions: applicationVersion.declaredConsumedEventVersionIds,
+        producedEventsVersions: applicationVersion.declaredProducedEventVersionIds,
+      }
       // Add consumer object for solace broker type
-      EP_CONFIG.target_messaging_service.messagingServiceType == "solace" ? app_summary[0].consumers = applicationVersion.consumers : null
-      applications.push(app_summary[0])
+      EP_CONFIG.target_messaging_service.messagingServiceType == "solace" ? app_summary.consumers = applicationVersion.consumers : null
+      applications.push(app_summary)
       consumedEventsVersions.push(applicationVersion.declaredConsumedEventVersionIds)
       producedEventsVersions.push(applicationVersion.declaredProducedEventVersionIds)
     }

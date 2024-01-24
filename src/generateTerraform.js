@@ -298,7 +298,6 @@ function cleanJSON(obj) {
   // Remove all empty object from template
   for (var propName in obj['resource']) {
     if (isEmpty(obj['resource'][propName])) {
-      console.log(propName)
       delete obj['resource'][propName];
     }
   }

@@ -236,7 +236,8 @@ function populate_solace_resources(tf) {
             "egress_enabled": true,
             "ingress_enabled": true,
             "msg_vpn_name": `${SOL_MSG_VPN}`,
-            "queue_name": `${consumer.name}`
+            "queue_name": `${consumer.name}`,
+            "permission": "consume"
           }
         
         // Subscription on queues
